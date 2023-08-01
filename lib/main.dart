@@ -11,24 +11,51 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: HomeScreen());
+    return MaterialApp(
+      home: HomeScreen(),
+      theme: ThemeData(
+          inputDecorationTheme:
+              InputDecorationTheme(border: OutlineInputBorder()),
+          colorScheme: ColorScheme.fromSwatch(
+            primarySwatch: Colors.indigo,
+          ).copyWith(secondary: Colors.orange)),
+    );
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text('Flutter Experts'),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            final resualt = await Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) {
+                return _AddStudentForm();
+              },
+            ));
+            setState(() {});
+          },
+          label: Text("Add Student"),
+          icon: Icon(Icons.add),
+        ),
         body: FutureBuilder<List<StudentData>>(
           future: getStudents(),
           builder: (context, snapshot) {
             if (snapshot.hasData && snapshot.data != null) {
               return ListView.builder(
+                padding: EdgeInsets.only(bottom: 85),
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
                   return _Student(student: snapshot.data![index]);
@@ -42,6 +69,93 @@ class HomeScreen extends StatelessWidget {
             return Container();
           },
         ));
+  }
+}
+
+class _AddStudentForm extends StatelessWidget {
+  // const _AddStudentForm({super.key});
+  final TextEditingController _firstNameControler = TextEditingController();
+  final TextEditingController _lastNameControler = TextEditingController();
+  final TextEditingController _courseControler = TextEditingController();
+  final TextEditingController _scoreControler = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        // Raveshe 1
+        // onPressed: () {
+        //   try {
+        //     saveStudent(_firstNameControler.text, _lastNameControler.text,
+        //             _courseControler.text, int.parse(_scoreControler.text))
+        //         .then((value) => Navigator.pop(context));
+        //   } catch (e) {
+        //     debugPrint(e.toString());
+        //   }
+        // },
+
+        // Ravesh 2
+        onPressed: () async {
+          try {
+            final newStudent = await saveStudent(
+                _firstNameControler.text,
+                _lastNameControler.text,
+                _courseControler.text,
+                int.parse(_scoreControler.text));
+            Navigator.pop(context, newStudent);
+          } catch (e) {
+            debugPrint(e.toString());
+          }
+        },
+        label: Text("Save"),
+        icon: Icon(Icons.save),
+      ),
+      appBar: AppBar(
+        title: Text("Add New Student"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _firstNameControler,
+              decoration: InputDecoration(
+                label: Text("First Name"),
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            TextField(
+              controller: _lastNameControler,
+              decoration: InputDecoration(
+                label: Text("Last Name"),
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            TextField(
+              controller: _courseControler,
+              decoration: InputDecoration(
+                label: Text("Course"),
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            TextField(
+              controller: _scoreControler,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                label: Text("Score"),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
